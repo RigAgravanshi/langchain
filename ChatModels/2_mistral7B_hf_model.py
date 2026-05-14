@@ -3,8 +3,6 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
 import os
 
-from ChatModels.chatbot import chat_history
-
 load_dotenv()
 
 llm = HuggingFaceEndpoint(
