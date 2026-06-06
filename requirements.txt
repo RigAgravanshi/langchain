@@ -2,6 +2,10 @@
 langchain
 langchain-core
 
+# Needed for learning purposes, even tho its about to be put down
+langchain-community
+langchain-experimental
+
 # OpenAI Integration
 langchain-openai
 openai
@@ -21,6 +25,10 @@ huggingface-hub
 # Environment Variable Management
 python-dotenv
 
-# Machine Learning Utilities
+# ML/DL Utilities
 numpy
 scikit-learn
+torch
+
+# structured output
+pydantic
