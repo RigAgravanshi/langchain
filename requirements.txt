@@ -5,6 +5,7 @@ langchain-core
 # Needed for learning purposes, even tho its about to be put down
 langchain-community
 langchain-experimental
+youtube-transcript-api
 
 # OpenAI Integration
 langchain-openai
