@@ -20,27 +20,29 @@ api = YouTubeTranscriptApi()
 try:
 	transcript_list = api.fetch(video_id=id, languages=["en","hi"])
 	txt = " ".join(s.text for s in transcript_list)
-	print("Transcript loading Complete...!!/n/n")
-	#print(txt[:5000])
+	print("Transcript loading Complete...!!\n\n")
 except TranscriptsDisabled:
-	print("Transcript aint available/n/n")
-print(f"Time taken: {(time.time() - start)} seconds/n/n")
+	print("Transcript aint available\n\n")
+print(f"Time taken: {(time.time() - start)} seconds\n\n")
 
 
 # chunking
 ''' TRY OUT SEMANTIC CHUNKING ONCE AFTER THE ENTIRE THING IS BUILT'''
 splitter = RecursiveCharacterTextSplitter(chunk_size=400, chunk_overlap=100)
-chunk_list = splitter.split_text(txt)
+chunk_list = splitter.split_text(txt)		# or do splitter.create_documents
 #print(len(chunk_list))
-print("Chunking process complete...!!/n/n")
-print(f"Time elapsed: {(time.time() - start)} seconds/n/n")
+print("Chunking process complete...!!\n\n")
 
 
 # vector store for embeddings
 '''models = BAAI/bge-base-en-v1.5 | Qwen/Qwen3-Embedding-0.6B '''
 embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2", model_kwargs={"token": os.getenv("HF_KEY")})
-vector_store = Chroma.from_documents(documents=chunk_list, embedding=embeddings, persist_directory="data/youtube_vector_store")
-print("Vector Storage process complete...!!/n/n")
+vector_store = Chroma.from_texts(
+		texts=chunk_list,					# or do Chroma.from_document()
+		embedding=embeddings,
+		persist_directory="data/youtube_vector_store")
+print("Vector Storage process complete...!!\n\n")
+print(f"Time elapsed: {(time.time() - start)} seconds\n\n")
 
 
 # initialize retriever
@@ -48,18 +50,18 @@ retriever = vector_store.as_retriever(
 	search_type = 'similarity',					 
 	search_kwargs = {'k' : 4}
 	)
-query = 'What is the origin and descent of Iranians as per the Rig Veda'
-context = retriever.invoke(query)
-print("Retrieval Process complete..!!/n/n")
-print(f"Time elapsed: {(time.time() - start)} seconds/n/n")
-
+query = "What is the origin of Iranians as per the Rig Veda. How is Zoroastrianism connected with the Rig Vedic Civilisation"
+retrieved_docs = retriever.invoke(query)
+context = " ".join(doc.page_content for doc in retrieved_docs)
+print("Retrieval Process complete..!!\n\n")
+print(f"Time elapsed: {(time.time() - start)} seconds\n\n")
 
 # loading the LLM, Prompt and Output-Parser
 llm = ChatGoogleGenerativeAI(model="gemini-3-flash-preview", api_key=os.getenv("GOOGLE_API_KEY"))
 prompt = PromptTemplate(
     template = """
 		You are a Helpful assistant. Answer the Question only from the provided Context.
-		If context is insufficient, Just say so. DO NOT make up information that isnt mentioned in the context
+		If context is insufficient, Just say so. DO NOT make up information that isn't mentioned in the context
 		Context: {context}
 		Question: {query}
 		""",
@@ -71,4 +73,4 @@ chain = prompt | llm | parser
 result = chain.invoke({'context':context, 'query':query})
 print(result)
 
-print(f"Total Time Taken: {round(time.time() - start)} seconds")
+print(f"\nTotal Time Taken: {round(time.time() - start)} seconds\n")
